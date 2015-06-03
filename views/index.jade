@@ -1,0 +1,15 @@
+extends ./layout
+
+block content
+  form(action="/start", method="POST")
+    dl
+      dt
+        label(for="name")
+          | Screen name
+          - if (name_error)
+            .error= name_error
+
+      dd
+        input(name="name", type="input")
+    fieldset.actions
+      input(type="submit", value="Start")
