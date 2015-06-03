@@ -2,40 +2,29 @@ var express = require("express");
 var path    = require("path");
 var app     = express();
 
+var server = require('http').Server(app);
+
+require("./websockets")(server);
+
+module.exports = server;
+
+// Setup jade views
+
 app.set("view engine", "jade");
 app.set("views", path.join(__dirname, "views"));
 
+// Common middleware
+
+app.use(require("./middlewares/logging"));
 app.use(express.static("public"));
 app.use(require("./middlewares/forms"));
 app.use(require("./middlewares/session"));
 
-function requireName(req, res, next) {
-  if (!req.session.name) {
-    return res.redirect("/");
-  }
-  next();
-}
+// Routes
 
-app.get("/", function(req, res) {
-  res.render("index");
-});
+app.use(require("./routes/chat"));
 
-app.get("/chat", requireName, function(req, res) {
-  var name = req.session.name;
-  res.render("chat", {name: name});
-});
+// Root path
 
-app.post("/start", function(req, res) {
-  var name = req.fields.name;
+app.get("/", function(req, res) { res.render("index"); });
 
-  if (!name) {
-    res.render("index", {
-      name_error: "Must provide a name."
-    });
-  } else {
-    req.session.name = name;
-    res.redirect("/chat");
-  }
-});
-
-module.exports = app;

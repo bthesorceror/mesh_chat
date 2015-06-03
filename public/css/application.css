@@ -1,3 +1,5 @@
+/* Start Whitespace Reset */
+
 ul,ol {
   list-style: none;
 }
@@ -36,7 +38,9 @@ summary::-webkit-details-marker {
   display: none;
 }
 
-header {
+/* End Whitespace Reset */
+
+header, footer, div#content {
   padding: 10px;
 }
 
@@ -46,11 +50,6 @@ header h1 {
 
 footer .copyright {
   float: right;
-  margin-right: 10px;
-}
-
-#content {
-  padding: 10px;
 }
 
 form dt, form dd {
