@@ -11,6 +11,7 @@
   "author": "Brandon Farmer",
   "license": "ISC",
   "dependencies": {
+    "async": "^1.2.0",
     "browserify": "^10.2.3",
     "express": "^4.12.4",
     "express-session": "^1.11.2",

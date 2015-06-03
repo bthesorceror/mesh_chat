@@ -1,5 +1,6 @@
 var express = require("express");
 var app     = express();
+var users   = require("../models/users");
 
 module.exports = app;
 
@@ -13,7 +14,12 @@ function requireName(req, res, next) {
 function validateName(name, cb) {
   if (!name) return cb("Must provide a name.");
 
-  cb();
+  users.get(name, function(err, user) {
+    if (err) return cb("Failed to lookup name");
+    if (user) return cb("Name already in use");
+
+    cb();
+  });
 }
 
 app.get("/chat", requireName, function(req, res) {
@@ -33,6 +39,7 @@ app.post("/start", function(req, res) {
 
     req.session.name = name;
     res.redirect("/chat");
+
   });
 
 });
