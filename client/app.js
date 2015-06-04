@@ -71,13 +71,41 @@ function onPart(name) {
 }
 
 function onRequest(connection, name, offer) {
-  console.dir(name, offer);
+  var pc = new PeerConnection(peerConfig, peerOptions);
+
+  pc.onicecandidate = function(event) {
+    connection.emit("candidate", name, event.candidate);
+  };
+
+  pc.ondatachannel = function(ev) {
+    var channel = ev.channel;
+    pc.channel = channel;
+
+    channel.onmessage = function(ev) {
+      alert(name + " says " + ev.data);
+    }
+  };
+
+  connections[name] = pc;
+
+  pc.setRemoteDescription(new SessionDescription(offer), function() {
+    pc.createAnswer(function(answer) {
+      pc.setLocalDescription(answer, function() {
+        connection.emit("answer", name, answer);
+      }, onError);
+    }, onError);
+  }, onError);
+}
+
+function onAnswer(connection, name, answer) {
+  console.dir(name);
 }
 
 function connect() {
   var connection = client();
 
   connection.on("request", onRequest.bind(null, connection))
+  connection.on("answer", onAnswer.bind(null, connection))
   connection.on("join", onJoin.bind(null, connection));
   connection.on("part", onPart);
 }
