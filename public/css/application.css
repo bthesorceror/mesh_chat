@@ -71,6 +71,7 @@ form dt label .error {
   border-width: 1px;
   border-color: black;
   float: left;
+  overflow-y: scroll;
 }
 
 #chat #messages {
