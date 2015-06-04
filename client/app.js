@@ -3,6 +3,7 @@ var $      = require("jquery");
 
 var SessionDescription = require("./session_description");
 var PeerConnection     = require("./peer_connection");
+var IceCandidate       = window.mozRTCIceCandidate || window.RTCIceCandidate;
 
 var peerOptions = {
   optional: [
@@ -107,7 +108,7 @@ function onCandidate(name, candidate) {
 
   if (!candidate) return;
 
-  var iceCandidate = new RTCIceCandidate(candidate);
+  var iceCandidate = new IceCandidate(candidate);
   pc.addIceCandidate(iceCandidate);
 
 }
