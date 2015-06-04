@@ -47,6 +47,7 @@ function onJoin(connection, name) {
 
 function onPart(name) {
   removeUser(name);
+  connections.remove(name);
 }
 
 function registerIceEvent(pc, connection, name) {
@@ -99,7 +100,6 @@ function onAnswer(connection, name, answer) {
 
   var desc = new SessionDescription(answer);
   pc.setRemoteDescription(desc, function() {}, onError);
-
 }
 
 function onCandidate(name, candidate) {

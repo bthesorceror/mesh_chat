@@ -16,6 +16,16 @@ Connections.prototype.get = function(name) {
   return this.store[name];
 }
 
+Connections.prototype.remove = function(name) {
+  var current = this.store[name];
+
+  if (current && current.close) {
+    current.close();
+  }
+
+  delete this.store[name];
+}
+
 Connections.prototype.broadcast = function(message) {
   var self = this;
   Object.keys(self.store).forEach(function(key) {
