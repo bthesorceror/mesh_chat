@@ -38,6 +38,7 @@ app.use(require("./middlewares/session"));
 // Routes
 
 app.use(require("./routes/chat"));
+app.use("/api", require("./routes/api"));
 
 // Root path
 

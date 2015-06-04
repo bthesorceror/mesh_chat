@@ -8,6 +8,8 @@ function onConnection(socket) {
   socket.broadcast.emit("join", screenName);
 
   socket.on("disconnect", function() {
+    socket.broadcast.emit("part", screenName);
+
     users.remove(screenName, function(err) {
       console.info("Disconnected: " + screenName);
     });

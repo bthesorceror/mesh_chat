@@ -62,3 +62,16 @@ form dt label .error {
   margin-left: 5px;
   color: red;
 }
+
+#chat #user_list {
+  height: 300px;
+  width: 100px;
+  padding: 5px;
+  border-style: solid;
+  border-width: 1px;
+  border-color: black;
+}
+
+#chat #user_list .not_connected {
+  color: red;
+}
