@@ -1,4 +1,3 @@
-var async  = require("async");
 var client = require("socket.io-client");
 var $      = require("jquery");
 
