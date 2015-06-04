@@ -75,3 +75,7 @@ form dt label .error {
 #chat #user_list .not_connected {
   color: red;
 }
+
+#chat #user_list .connected {
+  color: green;
+}

@@ -35,6 +35,7 @@ function onJoin(connection, name) {
   }
 
   channel.onopen = function(ev) {
+    showOnline(name);
     pc.channel = channel;
   }
 
@@ -72,6 +73,7 @@ function onRequest(connection, name, offer) {
   pc.ondatachannel = function(ev) {
     var channel = ev.channel;
     channel.onopen = function(ev) {
+      showOnline(name);
       pc.channel = channel;
     }
 
@@ -80,6 +82,7 @@ function onRequest(connection, name, offer) {
     }
 
     channel.onmessage = function(ev) {
+      showOffline(name);
       console.log(name, "sent", ev.data);
     }
   };
@@ -114,6 +117,24 @@ function onCandidate(name, candidate) {
   var iceCandidate = new RTCIceCandidate(candidate);
   pc.addIceCandidate(iceCandidate);
 
+}
+
+function showOnline(name) {
+  var $el = findUser(name);
+
+  if (!$el) return;
+
+  $el.removeClass("not_connected");
+  $el.addClass("connected");
+}
+
+function showOffline(name) {
+  var $el = findUser(name);
+
+  if (!$el) return;
+
+  $el.removeClass("connected");
+  $el.addClass("not_connected");
 }
 
 function connect() {
