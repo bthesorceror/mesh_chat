@@ -2,18 +2,83 @@ var async  = require("async");
 var client = require("socket.io-client");
 var $      = require("jquery");
 
-function onJoin(name) {
+var SessionDescription = require("./session_description");
+var PeerConnection     = require("./peer_connection");
+
+var peerOptions = {
+  optional: [
+    {DtlsSrtpKeyAgreement: true},
+    {RtpDataChannels: true}
+  ]
+};
+
+var peerConfig = {
+  "iceServers": [
+    { "url": "stun:stun.l.google.com:19302" }
+  ]
+};
+
+function Connections() {
+  this.store = {};
+}
+
+Connections.prototype.add = function(name, connection) {
+  var current = this.store[name];
+
+  if (current && current.close) {
+    current.close();
+  }
+
+  this.store[name] = connection;
+}
+
+var connections = new Connections();
+
+function onError(err) {
+  console.error(err);
+}
+
+function onJoin(connection, name) {
   addUser(name);
+
+  var pc      = new PeerConnection(peerConfig, peerOptions);
+  var channel = pc.createDataChannel("mesh_chat");
+
+  pc.channel = channel;
+
+  pc.onicecandidate = function(event) {
+    connection.emit("candidate", name, event.candidate);
+  }
+
+  channel.onopen = function(ev) {
+    channel.send("Hello, World!");
+  }
+
+  connections.add(name, pc);
+
+  pc.createOffer(
+    function(desc){
+      pc.setLocalDescription(desc, function() {
+        connection.emit("request", name, desc);
+      });
+    },
+    onError
+  );
 }
 
 function onPart(name) {
   removeUser(name);
 }
 
+function onRequest(connection, name, offer) {
+  console.dir(name, offer);
+}
+
 function connect() {
   var connection = client();
 
-  connection.on("join", onJoin);
+  connection.on("request", onRequest.bind(null, connection))
+  connection.on("join", onJoin.bind(null, connection));
   connection.on("part", onPart);
 }
 
