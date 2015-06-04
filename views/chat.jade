@@ -8,5 +8,9 @@ block content
   .message
     | Welcome, #{name}
 
-  #chat
+  #chat(data-name=name)
     #user_list
+    #messages
+    form#message
+      input(type="text", name="message")
+      input(type="submit", value="Post")

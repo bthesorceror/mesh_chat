@@ -30,22 +30,8 @@ function onJoin(connection, name) {
   var pc      = new PeerConnection(peerConfig, peerOptions);
   var channel = pc.createDataChannel("mesh_chat");
 
-  pc.onicecandidate = function(event) {
-    connection.emit("candidate", name, event.candidate);
-  }
-
-  channel.onopen = function(ev) {
-    showOnline(name);
-    pc.channel = channel;
-  }
-
-  channel.onclose = function(ev) {
-    pc.channel = null;
-  }
-
-  channel.onmessage = function(ev) {
-    console.log(name, "sent", ev.data);
-  }
+  registerIceEvent(pc, connection, name);
+  registerChannel(pc, channel, name);
 
   connections.add(name, pc);
 
@@ -63,31 +49,39 @@ function onPart(name) {
   removeUser(name);
 }
 
+function registerIceEvent(pc, connection, name) {
+  pc.onicecandidate = function(event) {
+    connection.emit("candidate", name, event.candidate);
+  }
+}
+
+function registerChannel(pc, channel, name) {
+  channel.onopen = function(ev) {
+    showOnline(name);
+    pc.channel = channel;
+  }
+
+  channel.onclose = function(ev) {
+    showOffline(name);
+    pc.channel = null;
+  }
+
+  channel.onmessage = function(ev) {
+    addMessage(name, ev.data);
+  }
+}
+
 function onRequest(connection, name, offer) {
   var pc = new PeerConnection(peerConfig, peerOptions);
 
-  pc.onicecandidate = function(event) {
-    connection.emit("candidate", name, event.candidate);
-  };
+  registerIceEvent(pc, connection, name);
 
   pc.ondatachannel = function(ev) {
     var channel = ev.channel;
-    channel.onopen = function(ev) {
-      showOnline(name);
-      pc.channel = channel;
-    }
-
-    channel.onclose = function(ev) {
-      pc.channel = null;
-    }
-
-    channel.onmessage = function(ev) {
-      showOffline(name);
-      console.log(name, "sent", ev.data);
-    }
+    registerChannel(pc, channel, name);
   };
 
-  connections[name] = pc;
+  connections.add(name, pc);
 
   pc.setRemoteDescription(new SessionDescription(offer), function() {
     pc.createAnswer(function(answer) {
@@ -117,6 +111,15 @@ function onCandidate(name, candidate) {
   var iceCandidate = new RTCIceCandidate(candidate);
   pc.addIceCandidate(iceCandidate);
 
+}
+
+function addMessage(name, message) {
+  var $messages = $("#messages");
+
+  var html = "<b>" + name + "</b>: " + message;
+  var $msg = $("<div />").addClass("message").html(html);
+
+  $messages.append($msg);
 }
 
 function showOnline(name) {
@@ -164,9 +167,23 @@ function findUser(name) {
 }
 
 function removeUser(name) {
-  $el = findUser(name);
+  var $el = findUser(name);
 
   if ($el) $el.remove();
+}
+
+function bindForm() {
+  var $form = $("form#message");
+
+  $form.on("submit", function(ev) {
+    ev.preventDefault();
+
+    var message = $form.find("input[name='message']").val();
+    $form[0].reset();
+
+    addMessage("YOU", message);
+    connections.broadcast(message);
+  });
 }
 
 function addUser(name) {
@@ -191,6 +208,7 @@ $(function() {
     success: function(data) {
       displayList(data.users);
       connect();
+      bindForm();
     }
   })
 });
