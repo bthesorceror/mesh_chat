@@ -18,21 +18,7 @@ var peerConfig = {
   ]
 };
 
-function Connections() {
-  this.store = {};
-}
-
-Connections.prototype.add = function(name, connection) {
-  var current = this.store[name];
-
-  if (current && current.close) {
-    current.close();
-  }
-
-  this.store[name] = connection;
-}
-
-var connections = new Connections();
+var connections = require("./connections");
 
 function onError(err) {
   console.error(err);
@@ -44,14 +30,20 @@ function onJoin(connection, name) {
   var pc      = new PeerConnection(peerConfig, peerOptions);
   var channel = pc.createDataChannel("mesh_chat");
 
-  pc.channel = channel;
-
   pc.onicecandidate = function(event) {
     connection.emit("candidate", name, event.candidate);
   }
 
   channel.onopen = function(ev) {
-    channel.send("Hello, World!");
+    pc.channel = channel;
+  }
+
+  channel.onclose = function(ev) {
+    pc.channel = null;
+  }
+
+  channel.onmessage = function(ev) {
+    console.log(name, "sent", ev.data);
   }
 
   connections.add(name, pc);
@@ -79,10 +71,16 @@ function onRequest(connection, name, offer) {
 
   pc.ondatachannel = function(ev) {
     var channel = ev.channel;
-    pc.channel = channel;
+    channel.onopen = function(ev) {
+      pc.channel = channel;
+    }
+
+    channel.onclose = function(ev) {
+      pc.channel = null;
+    }
 
     channel.onmessage = function(ev) {
-      alert(name + " says " + ev.data);
+      console.log(name, "sent", ev.data);
     }
   };
 
@@ -98,7 +96,24 @@ function onRequest(connection, name, offer) {
 }
 
 function onAnswer(connection, name, answer) {
-  console.dir(name);
+  var pc = connections.get(name);
+
+  if (!pc) return;
+
+  var desc = new SessionDescription(answer);
+  pc.setRemoteDescription(desc, function() {}, onError);
+
+}
+
+function onCandidate(name, candidate) {
+  var pc = connections.get(name);
+  if (!pc) return;
+
+  if (!candidate) return;
+
+  var iceCandidate = new RTCIceCandidate(candidate);
+  pc.addIceCandidate(iceCandidate);
+
 }
 
 function connect() {
@@ -106,6 +121,7 @@ function connect() {
 
   connection.on("request", onRequest.bind(null, connection))
   connection.on("answer", onAnswer.bind(null, connection))
+  connection.on("candidate", onCandidate)
   connection.on("join", onJoin.bind(null, connection));
   connection.on("part", onPart);
 }

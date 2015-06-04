@@ -16,6 +16,10 @@ function onConnection(io, socket) {
     io.to(name).emit("answer", screenName, answer);
   });
 
+  socket.on("candidate", function(name, candidate) {
+    io.to(name).emit("candidate", screenName, candidate);
+  });
+
   socket.on("disconnect", function() {
     socket.broadcast.emit("part", screenName);
 
