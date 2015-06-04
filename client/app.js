@@ -114,12 +114,18 @@ function onCandidate(name, candidate) {
 }
 
 function addMessage(name, message) {
+  if (!message) return;
+
   var $messages = $("#messages");
 
   var html = "<b>" + name + "</b>: " + message;
   var $msg = $("<div />").addClass("message").html(html);
 
   $messages.append($msg);
+
+  $messages.stop().animate({
+    scrollTop: $messages[0].scrollHeight
+  }, 800);
 }
 
 function showOnline(name) {
