@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "watchify client/app.js -o public/js/app.bundle.js",
     "build": "mkdir -p public/js && browserify client/app.js -o public/js/app.bundle.js",
