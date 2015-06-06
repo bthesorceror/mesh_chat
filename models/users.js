@@ -4,28 +4,37 @@ var users = {
 
   get: function(name, done) {
     var value = store[name];
-    done(null, value);
+    setImmediate(function() {
+      done(null, value);
+    });
   },
 
   add: function(name, done) {
     store[name] = true;
-    done();
+    setImmediate(function() {
+      done();
+    });
   },
 
   remove: function(name, done) {
     delete store[name];
-    done();
+    setImmediate(function() {
+      done();
+    });
   },
 
   list: function (done) {
     var results = Object.keys(store);
-    done(null, results);
+    setImmediate(function() {
+      done(null, results);
+    });
   },
 
   clear: function (done) {
-    console.info("clearing user presence...");
     store = {};
-    done();
+    setImmediate(function() {
+      done();
+    });
   }
 
 }
